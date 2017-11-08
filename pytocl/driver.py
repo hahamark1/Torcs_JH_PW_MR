@@ -115,5 +115,4 @@ class Driver:
             carstate.current_lap_time
         )
 
-    def break(self, carstate, target_track_pos, command):
-        
+    def brake(self, carstate, target_track_pos, command):
