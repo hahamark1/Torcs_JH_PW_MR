@@ -53,7 +53,7 @@ class Driver:
             self.data_logger.close()
             self.data_logger = None
 
-    def drive(self, carstate: State):
+    def drive(self, carstate: State) -> Command:
         """
         Produces driving command in response to newly received car state.
 
@@ -61,20 +61,22 @@ class Driver:
         lot of inputs. But it will get the car (if not disturbed by other
         drivers) successfully driven along the race track.
         """
-        print(carstate)
+        # print(carstate)
         command = Command()
-        print(command)
+        print("\033c")
+        print(carstate)
+        
         self.steer(carstate, 0.0, command)
 
-        ACC_LATERAL_MAX = 6400 * 5
-        v_x = max(80, math.sqrt(ACC_LATERAL_MAX / abs(command.steering)))
-        # v_x = 80
+        # ACC_LATERAL_MAX = 6400 * 5
+        # v_x = min(80, math.sqrt(ACC_LATERAL_MAX / abs(command.steering)))
+        v_x = 100
 
         self.accelerate(carstate, v_x, command)
 
         if self.data_logger:
             self.data_logger.log(carstate, command)
-        print(command)
+
         return command
 
     def accelerate(self, carstate, target_speed, command):
@@ -94,7 +96,7 @@ class Driver:
                 # off track, reduced grip:
                 acceleration = min(0.4, acceleration)
 
-            command.accelerator = max(acceleration, 1)
+            command.accelerator = min(acceleration, 1)
 
             if carstate.rpm > 8000:
                 command.gear = carstate.gear + 1
@@ -114,5 +116,3 @@ class Driver:
             steering_error,
             carstate.current_lap_time
         )
-
-    def brake(self, carstate, target_track_pos, command):
