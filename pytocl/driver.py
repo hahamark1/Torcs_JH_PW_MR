@@ -69,6 +69,7 @@ class Driver:
         ACC_LATERAL_MAX = 6400 * 5
         v_x = max(80, math.sqrt(ACC_LATERAL_MAX / abs(command.steering)))
         # v_x = 80
+        
 
         self.accelerate(carstate, v_x, command)
 
@@ -114,5 +115,3 @@ class Driver:
             steering_error,
             carstate.current_lap_time
         )
-
-    def brake(self, carstate, target_track_pos, command):

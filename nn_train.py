@@ -39,6 +39,7 @@ test_ctrl, test_output = np.array(train_in[20000:],dtype=float), np.array(train_
 import numpy as np
 from matplotlib import pyplot as plt
 from pyESN import ESN
+import pickle
 
 rng = np.random.RandomState(42)
 
@@ -59,6 +60,10 @@ esn = ESN(n_inputs = 22,
 
 pred_train = esn.fit(train_ctrl,train_output)
 
+pickle.dump(esn, open("esn.p", "wb"))
+
+
 print("test error:")
 pred_test = esn.predict(test_ctrl)
+print(test_ctrl.shape)
 print(np.sqrt(np.mean((pred_test - test_output)**2)))
