@@ -1,6 +1,6 @@
 import pickle
 
-filepath = "drivelogs/drivelog-2017-11-19-22-03-49.pickle"
+filepath = "drivelogs/forza.pickle"
 all_states = []
 with open(filepath, 'rb') as logfile:
 	unpickler = pickle.Unpickler(logfile)
@@ -11,4 +11,5 @@ with open(filepath, 'rb') as logfile:
 	except EOFError:
 		pass
 
-print(len(all_states))
+# print(len(all_states))
+print(type(all_states[1]))
