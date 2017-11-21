@@ -8,12 +8,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-# def read_data():
 files = []
 
 for file in os.listdir(os.path.join(os.getcwd() + '/drivelogs')):
 	if file.endswith(".pickle"):
 		files.append(os.path.join(os.path.join(os.getcwd() + '/drivelogs'), file))
+
+sensors = [0, 5, 8, 10, 11, 13, 18]
 
 all_states = []
 for filepath in files:
@@ -26,52 +27,54 @@ for filepath in files:
 		except EOFError:
 			pass
 
-inputs = np.zeros((len(all_states), len(all_states[1].distances_from_edge) + 1))
+inputs = np.zeros((len(all_states), len(sensors)))
 outputs = np.zeros((len(all_states), 2))
 for index, state in enumerate(all_states):
+	distances = np.array(state.distances_from_edge)
+	distances = distances[sensors]
 	outputs[index, :] = [state.speed_x, state.distance_from_center]
-	inputs[index, :] = list(state.distances_from_edge) + [state.angle]
+	inputs[index, :] = list(distances)
 
 
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.layer1 = nn.Linear(20, 50)
-        self.layer2 = nn.Linear(50, 2)
+        self.layer1 = nn.Linear(7, 1000)
+        # self.bias1 = nn.Linear()
+        self.relu = nn.ReLU()
+        self.layer2 = nn.Linear(1000, 2)
 
     def forward(self, x):
-    	print(x)
     	x = self.layer1(x)
-    	print(x)
+    	x = self.relu(x)
     	x = self.layer2(x)
     	return x
 
+
 net = Net()
-# input1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-input1 = torch.zeros(20)
-net_out = net(input1)
 
 # create a stochastic gradient descent optimizer
-optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
+optimizer = optim.SGD(net.parameters(), lr=0.00000003, momentum=0.0)
 # create a loss function
-criterion = nn.NLLLoss()
+criterion = nn.MSELoss()
 
-epochs = 20
+epochs = 100
 
 # run the main training loop
 for epoch in range(epochs):
 	for index in range(len(inputs)):
-		data = torch.from_numpy(inputs[index, :])
-		target = torch.from_numpy(outputs[index, :])
-		print(type(data), type(target))
+		data = torch.from_numpy(inputs[index, :]).type(torch.FloatTensor)
+		target = torch.from_numpy(outputs[index, :]).type(torch.FloatTensor)
+		
 		data, target = Variable(data), Variable(target)
-		optimizer.zero_grad()
+		net.zero_grad()
 		net_out = net(data)
-		print(type(net_out))
+
 		loss = criterion(net_out, target)
 		loss.backward()
+
 		optimizer.step()
-		if batch_idx % log_interval == 0:
-		    print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-		            epoch, batch_idx * len(data), len(train_loader.dataset),
-		                   100. * batch_idx / len(train_loader), loss.data[0]))
+	print("Train Epoch", epoch, "loss", loss.data[0])
+	torch.save(net.state_dict(), "nn_3")
+
+# pickle.dump(net, open( "nn_1.p", "wb" ) )
