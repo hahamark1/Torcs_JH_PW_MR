@@ -14,7 +14,8 @@ for file in os.listdir(os.path.join(os.getcwd() + '/drivelogs')):
 	if file.endswith(".pickle"):
 		files.append(os.path.join(os.path.join(os.getcwd() + '/drivelogs'), file))
 
-sensors = [0, 5, 8, 10, 11, 13, 18]
+# sensors = [0, 3, 6, 8, 10, 12, 15, 18]
+sensors = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
 
 all_states = []
 for filepath in files:
@@ -27,38 +28,44 @@ for filepath in files:
 		except EOFError:
 			pass
 
-inputs = np.zeros((len(all_states), len(sensors)))
-outputs = np.zeros((len(all_states), 2))
+inputs = np.zeros((len(all_states), len(sensors) + 3))
+outputs = np.zeros((len(all_states), 3))
 for index, state in enumerate(all_states):
 	distances = np.array(state.distances_from_edge)
 	distances = distances[sensors]
-	outputs[index, :] = [state.speed_x, state.distance_from_center]
-	inputs[index, :] = list(distances)
+	# outputs[index, :] = [state.speed_x, state.distance_from_center]
+	outputs[index, :] = [state.accel_cmd, state.brake_cmd, state.steer_cmd]
+	inputs[index, :] = list(distances) + [state.angle, state.speed_x, state.distance_from_center]
 
+
+print('n entries:', len(outputs))
 
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.layer1 = nn.Linear(7, 1000)
-        # self.bias1 = nn.Linear()
-        self.relu = nn.ReLU()
-        self.layer2 = nn.Linear(1000, 2)
+        self.layer1 = nn.Linear(len(sensors) + 3, 1000)
+        self.layer2 = nn.Linear(1000, 100)
+        self.layer3 = nn.Linear(100, 3)
+        self.tanh = nn.Tanh()
 
     def forward(self, x):
-    	x = self.layer1(x)
-    	x = self.relu(x)
-    	x = self.layer2(x)
-    	return x
+        x = self.layer1(x)
+        x = self.tanh(x)
+        x = self.layer2(x)
+        x = self.tanh(x)
+        x = self.layer3(x)
+        x = self.tanh(x)      
+        return x
 
 
 net = Net()
 
 # create a stochastic gradient descent optimizer
-optimizer = optim.SGD(net.parameters(), lr=0.00000003, momentum=0.0)
+optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.0)
 # create a loss function
 criterion = nn.MSELoss()
 
-epochs = 100
+epochs = 10000
 
 # run the main training loop
 for epoch in range(epochs):
@@ -75,6 +82,4 @@ for epoch in range(epochs):
 
 		optimizer.step()
 	print("Train Epoch", epoch, "loss", loss.data[0])
-	torch.save(net.state_dict(), "nn_3")
-
-# pickle.dump(net, open( "nn_1.p", "wb" ) )
+	torch.save(net.state_dict(), "nn_5")

@@ -99,6 +99,9 @@ class State(Value):
             sensor_dict,
             'focus'
         )
+        self.accel_cmd = self.float_value(sensor_dict, 'accel')
+        self.brake_cmd = self.float_value(sensor_dict, 'brake')
+        self.steer_cmd = self.float_value(sensor_dict, 'steer')
 
     @property
     def distances_from_egde_valid(self):
