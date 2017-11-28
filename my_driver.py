@@ -1,6 +1,5 @@
 from pytocl.driver import Driver
 from pytocl.car import State, Command
-import pyESN
 import pickle
 import numpy as np
 

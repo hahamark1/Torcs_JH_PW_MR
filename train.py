@@ -14,7 +14,6 @@ for file in os.listdir(os.path.join(os.getcwd() + '/drivelogs')):
 	if file.endswith(".pickle"):
 		files.append(os.path.join(os.path.join(os.getcwd() + '/drivelogs'), file))
 
-# sensors = [0, 3, 6, 8, 10, 12, 15, 18]
 sensors = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
 
 all_states = []
@@ -33,7 +32,6 @@ outputs = np.zeros((len(all_states), 3))
 for index, state in enumerate(all_states):
 	distances = np.array(state.distances_from_edge)
 	distances = distances[sensors]
-	# outputs[index, :] = [state.speed_x, state.distance_from_center]
 	outputs[index, :] = [state.accel_cmd, state.brake_cmd, state.steer_cmd]
 	inputs[index, :] = list(distances) + [state.angle, state.speed_x, state.distance_from_center]
 

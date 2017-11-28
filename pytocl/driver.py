@@ -63,7 +63,7 @@ class Driver:
         self.data_logger = DataLogWriter() if logdata else None
 
         self.NN = Net()
-        self.NN.load_state_dict(torch.load('nn_5'))
+        self.NN.load_state_dict(torch.load('neural_nets/nn_2'))
 
     
 
@@ -108,11 +108,7 @@ class Driver:
         out = self.NN.forward(inp)
 
         command = Command()
-        # command.accelerator = out.data[0]
-        if out.data[0] > 0.2:
-            command.accelerator = 1
-        else:
-            command.accelerator = 0.5
+        command.accelerator = out.data[0] / 2
         
         command.brake = out.data[1]
 
