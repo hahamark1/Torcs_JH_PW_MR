@@ -10,9 +10,9 @@ import torch.optim as optim
 
 files = []
 
-for file in os.listdir(os.path.join(os.getcwd() + '/drivelogs/handmatig')):
+for file in os.listdir(os.path.join(os.getcwd() + '/drivelogs')):
 	if file.endswith(".pickle"):
-		files.append(os.path.join(os.path.join(os.getcwd() + '/drivelogs/handmatig'), file))
+		files.append(os.path.join(os.path.join(os.getcwd() + '/drivelogs'), file))
 
 sensors = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
 
@@ -59,7 +59,7 @@ class Net(nn.Module):
 net = Net()
 
 # create a stochastic gradient descent optimizer
-optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.0)
+optimizer = optim.SGD(net.parameters(), lr=0.0005, momentum=0.0)
 # create a loss function
 criterion = nn.MSELoss()
 
@@ -80,4 +80,4 @@ for epoch in range(epochs):
 
 		optimizer.step()
 	print("Train Epoch", epoch, "loss", loss.data[0])
-	torch.save(net.state_dict(), "nn_5")
+	torch.save(net.state_dict(), "nn_6")
