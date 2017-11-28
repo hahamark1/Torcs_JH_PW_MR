@@ -59,7 +59,7 @@ class Net(nn.Module):
 net = Net()
 
 # create a stochastic gradient descent optimizer
-optimizer = optim.SGD(net.parameters(), lr=0.0005, momentum=0.0)
+optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.0)
 # create a loss function
 criterion = nn.MSELoss()
 
