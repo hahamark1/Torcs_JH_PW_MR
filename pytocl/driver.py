@@ -63,7 +63,7 @@ class Driver:
         self.data_logger = DataLogWriter() if logdata else None
 
         self.NN = Net()
-        self.NN.load_state_dict(torch.load('neural_nets/nn_2'))
+        self.NN.load_state_dict(torch.load('neural_nets/nn_5'))
 
     
 
@@ -108,7 +108,7 @@ class Driver:
         out = self.NN.forward(inp)
 
         command = Command()
-        command.accelerator = out.data[0] / 2
+        command.accelerator = out.data[0]
         
         command.brake = out.data[1]
 
@@ -143,6 +143,7 @@ class Driver:
         print("\033c")
         print("sensors: \n", distances, "\n \nangle:", carstate.angle, "\nspeed:", carstate.speed_x, "\ndist from cent:", carstate.distance_from_center, "\n")
         print("acc", out.data[0], "\nbrake", out.data[1], "\nsteer", out.data[2])
+        # print("acc", carstate.accel_cmd, "\nbrake", carstate.brake_cmd, "\nsteer", carstate.steer_cmd)
 
         if carstate.speed_x <= 10:
             command.accelerator = 0.8
