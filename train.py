@@ -10,9 +10,15 @@ import torch.optim as optim
 
 files = []
 
+<<<<<<< HEAD
 for file in os.listdir(os.path.join(os.getcwd() + '/drive_data')):
 	if file.endswith(".pickle"):
 		files.append(os.path.join(os.path.join(os.getcwd() + '/drive_data'), file))
+=======
+for file in os.listdir(os.path.join(os.getcwd() + '/train_data')):
+	if file.endswith(".pickle"):
+		files.append(os.path.join(os.path.join(os.getcwd() + '/train_data'), file))
+>>>>>>> 1d35bdfb07ec105150f8ae8bbbfa12841e7083e3
 
 sensors = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
 
@@ -44,7 +50,9 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.layer1 = nn.Linear(len(sensors) + 3, 1000)
         self.layer2 = nn.Linear(1000, 100)
-        self.layer3 = nn.Linear(100, 3)
+        self.layer3 = nn.Linear(100, 100)
+        self.layer4 = nn.Linear(100, 100)
+        self.layer5 = nn.Linear(100, 3)
         self.tanh = nn.Tanh()
 
     def forward(self, x):
@@ -53,7 +61,15 @@ class Net(nn.Module):
         x = self.layer2(x)
         x = self.tanh(x)
         x = self.layer3(x)
+<<<<<<< HEAD
         x = self.tanh(x)
+=======
+        x = self.tanh(x)      
+        x = self.layer4(x)
+        x = self.tanh(x) 
+        x = self.layer5(x)
+        x = self.tanh(x) 
+>>>>>>> 1d35bdfb07ec105150f8ae8bbbfa12841e7083e3
         return x
 
 
@@ -68,10 +84,18 @@ epochs = 10000
 
 # run the main training loop
 for epoch in range(epochs):
+<<<<<<< HEAD
 	for index in range(0,len(inputs),25):
 		data = torch.from_numpy(inputs[index: index+25, :]).type(torch.FloatTensor).cuda()
 		target = torch.from_numpy(outputs[index: index+25, :]).type(torch.FloatTensor).cuda()
 
+=======
+
+	for index in range(len(inputs)):
+		data = torch.from_numpy(inputs[index, :]).type(torch.FloatTensor)
+		target = torch.from_numpy(outputs[index, :]).type(torch.FloatTensor)
+		
+>>>>>>> 1d35bdfb07ec105150f8ae8bbbfa12841e7083e3
 		data, target = Variable(data), Variable(target)
 		net.zero_grad()
 		net_out = net(data)
@@ -80,5 +104,10 @@ for epoch in range(epochs):
 		loss.backward()
 
 		optimizer.step()
+<<<<<<< HEAD
 	print("Train Epoch", epoch, "loss", loss.data[0])
 	torch.save(net.state_dict(), "nn_6")
+=======
+	print("Train Epoch", epoch+1, "loss", loss.data[0])
+	torch.save(net.state_dict(), "nn_6")
+>>>>>>> 1d35bdfb07ec105150f8ae8bbbfa12841e7083e3
