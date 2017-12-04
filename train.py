@@ -10,9 +10,9 @@ import torch.optim as optim
 
 files = []
 
-for file in os.listdir(os.path.join(os.getcwd() + '/drivelogs')):
+for file in os.listdir(os.path.join(os.getcwd() + '/train_data')):
 	if file.endswith(".pickle"):
-		files.append(os.path.join(os.path.join(os.getcwd() + '/drivelogs'), file))
+		files.append(os.path.join(os.path.join(os.getcwd() + '/train_data'), file))
 
 sensors = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
 
@@ -43,7 +43,9 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.layer1 = nn.Linear(len(sensors) + 3, 1000)
         self.layer2 = nn.Linear(1000, 100)
-        self.layer3 = nn.Linear(100, 3)
+        self.layer3 = nn.Linear(100, 100)
+        self.layer4 = nn.Linear(100, 100)
+        self.layer5 = nn.Linear(100, 3)
         self.tanh = nn.Tanh()
 
     def forward(self, x):
@@ -53,6 +55,10 @@ class Net(nn.Module):
         x = self.tanh(x)
         x = self.layer3(x)
         x = self.tanh(x)      
+        x = self.layer4(x)
+        x = self.tanh(x) 
+        x = self.layer5(x)
+        x = self.tanh(x) 
         return x
 
 
@@ -67,6 +73,7 @@ epochs = 10000
 
 # run the main training loop
 for epoch in range(epochs):
+
 	for index in range(len(inputs)):
 		data = torch.from_numpy(inputs[index, :]).type(torch.FloatTensor)
 		target = torch.from_numpy(outputs[index, :]).type(torch.FloatTensor)
@@ -79,5 +86,5 @@ for epoch in range(epochs):
 		loss.backward()
 
 		optimizer.step()
-	print("Train Epoch", epoch, "loss", loss.data[0])
+	print("Train Epoch", epoch+1, "loss", loss.data[0])
 	torch.save(net.state_dict(), "nn_6")

@@ -27,7 +27,9 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.layer1 = nn.Linear(len(sensors) + 3, 1000)
         self.layer2 = nn.Linear(1000, 100)
-        self.layer3 = nn.Linear(100, 3)
+        self.layer3 = nn.Linear(100, 100)
+        self.layer4 = nn.Linear(100, 100)
+        self.layer5 = nn.Linear(100, 3)
         self.tanh = nn.Tanh()
 
     def forward(self, x):
@@ -36,7 +38,11 @@ class Net(nn.Module):
         x = self.layer2(x)
         x = self.tanh(x)
         x = self.layer3(x)
-        x = self.tanh(x)        
+        x = self.tanh(x)      
+        x = self.layer4(x)
+        x = self.tanh(x) 
+        x = self.layer5(x)
+        x = self.tanh(x) 
         return x
 
 class Driver:
@@ -63,7 +69,7 @@ class Driver:
         self.data_logger = DataLogWriter() if logdata else None
 
         self.NN = Net()
-        self.NN.load_state_dict(torch.load('neural_nets/nn_5'))
+        self.NN.load_state_dict(torch.load('neural_nets/nn_ookbestgoed_5layers'))
 
     
 
@@ -107,12 +113,17 @@ class Driver:
 
         out = self.NN.forward(inp)
 
+
         command = Command()
         command.accelerator = out.data[0]
-        
+        if carstate.speed_x <= 30:
+            command.accelerator = 1
+
         command.brake = out.data[1]
 
         command.steering = out.data[2]
+
+        # getting back on the track hard-coded
         if distances[0] == -1:
             if carstate.speed_x >= 10:
                 command.accelerator = 0
