@@ -10,15 +10,16 @@ import torch.optim as optim
 
 files = []
 
-for file in os.listdir(os.path.join(os.getcwd() + '/drivelogs')):
+for file in os.listdir(os.path.join(os.getcwd() + '/drive_data')):
 	if file.endswith(".pickle"):
-		files.append(os.path.join(os.path.join(os.getcwd() + '/drivelogs'), file))
+		files.append(os.path.join(os.path.join(os.getcwd() + '/drive_data'), file))
 
 sensors = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
 
 all_states = []
 for filepath in files:
 	with open(filepath, 'rb') as logfile:
+		# print(logfile)
 		unpickler = pickle.Unpickler(logfile)
 		try:
 			while True:
@@ -52,14 +53,14 @@ class Net(nn.Module):
         x = self.layer2(x)
         x = self.tanh(x)
         x = self.layer3(x)
-        x = self.tanh(x)      
+        x = self.tanh(x)
         return x
 
 
-net = Net()
+net = Net().cuda()
 
 # create a stochastic gradient descent optimizer
-optimizer = optim.SGD(net.parameters(), lr=0.0005, momentum=0.0)
+optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.0)
 # create a loss function
 criterion = nn.MSELoss()
 
@@ -67,10 +68,10 @@ epochs = 10000
 
 # run the main training loop
 for epoch in range(epochs):
-	for index in range(len(inputs)):
-		data = torch.from_numpy(inputs[index, :]).type(torch.FloatTensor)
-		target = torch.from_numpy(outputs[index, :]).type(torch.FloatTensor)
-		
+	for index in range(0,len(inputs),25):
+		data = torch.from_numpy(inputs[index: index+25, :]).type(torch.FloatTensor).cuda()
+		target = torch.from_numpy(outputs[index: index+25, :]).type(torch.FloatTensor).cuda()
+
 		data, target = Variable(data), Variable(target)
 		net.zero_grad()
 		net_out = net(data)
