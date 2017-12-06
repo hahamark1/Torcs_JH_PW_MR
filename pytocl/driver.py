@@ -22,14 +22,15 @@ sensors = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
 
 
 
+
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         self.layer1 = nn.Linear(len(sensors) + 3, 1000)
         self.layer2 = nn.Linear(1000, 100)
         self.layer3 = nn.Linear(100, 100)
-        self.layer4 = nn.Linear(100, 100)
-        self.layer5 = nn.Linear(100, 3)
+        # self.layer4 = nn.Linear(100, 100)
+        self.layer4 = nn.Linear(100, 3)
         self.tanh = nn.Tanh()
 
     def forward(self, x):
@@ -39,11 +40,13 @@ class Net(nn.Module):
         x = self.tanh(x)
         x = self.layer3(x)
         x = self.tanh(x)      
+        # x = self.layer4(x)
+        # x = self.tanh(x) 
         x = self.layer4(x)
         x = self.tanh(x) 
-        x = self.layer5(x)
-        x = self.tanh(x) 
         return x
+
+
 
 class Driver:
     """
@@ -69,7 +72,8 @@ class Driver:
         self.data_logger = DataLogWriter() if logdata else None
 
         self.NN = Net()
-        self.NN.load_state_dict(torch.load('neural_nets/nn_ookbestgoed_5layers'))
+        self.NN.load_state_dict(torch.load('neural_nets/nn_good_4layers'))
+        # self.hidden = Variable(torch.zeros(100))
 
     
 
