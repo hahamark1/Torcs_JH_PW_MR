@@ -1,6 +1,7 @@
 import logging
 
 import math
+import pickle
 
 from pytocl.analysis import DataLogWriter
 from pytocl.car import State, Command, MPS_PER_KMH
@@ -9,6 +10,7 @@ from pytocl.controller import CompositeController, ProportionalController, \
 
 import pickle
 import numpy as np
+import uuid
 
 import torch
 import torch.nn as nn
@@ -73,9 +75,12 @@ class Driver:
 
         self.NN = Net()
         self.NN.load_state_dict(torch.load('neural_nets/nn_good_4layers'))
-        # self.hidden = Variable(torch.zeros(100))
 
-    
+        self.swarm_data = pickle.load(open('swarm_data.pickle', 'rb'))
+        self.uniqueid = uuid.uuid4()
+        self.swarm_data['Drivers'][self.uniqueid] = {'velocity': 0, 'positionx': 0, 'positiony': 0}
+        pickle.dump(self.swarm_data, open('swarm_data.pickle', 'wb'))
+
 
     @property
     def range_finder_angles(self):
@@ -99,16 +104,17 @@ class Driver:
             self.data_logger.close()
             self.data_logger = None
 
-    def drive(self, carstate: State) -> Command:
+    def drive(self, carstate: State):
         """
         Produces driving command in response to newly received car state.
 
         This is a dummy driving routine, very dumb and not really considering a
         lot of inputs. But it will get the car (if not disturbed by other
         drivers) successfully driven along the race track.
-        """        
+        """
         distances = np.array(carstate.distances_from_edge)
         distances = distances[sensors]
+        self.swarm_data = pickle.load(open('swarm_data.pickle', 'rb'))
 
         inp = np.append(distances, [carstate.angle, carstate.speed_x, carstate.distance_from_center])
 
@@ -124,6 +130,7 @@ class Driver:
             command.accelerator = 1
 
         command.brake = out.data[1]
+
 
         command.steering = out.data[2]
 
@@ -154,6 +161,31 @@ class Driver:
                     command.steering = -2 / (carstate.speed_x + 1)
                 else:
                     command.steering = 0
+
+
+        for driver, values in self.swarm_data['Drivers'].items():
+            if driver != self.uniqueid:
+                print(values)
+                if 0 < values['positionx'] - carstate.distance_from_start < 20:
+                    if values['velocity'] < carstate.speed_x:
+                        command.accelerator *= 0.9
+
+                        command.brake *=1.1
+        acc = command.accelerator
+        bra = command.brake
+        if self.swarm_data['mapping'] == []:
+            self.swarm_data['mapping'] = np.zeros((math.ceil(carstate.distance_from_start/15), 20))
+
+        if self.swarm_data['mapping'][round(carstate.distance_from_start/15)-1, round(carstate.distance_from_center+1*10)] > 0:
+            command.accelerator *= 1.5
+        elif self.swarm_data['mapping'][round(carstate.distance_from_start/15)-1, round(carstate.distance_from_center+1*10)] < 0:
+            command.accelerator *= .75
+
+
+        if acc > 0.5:
+            self.swarm_data['mapping'][round(carstate.distance_from_start/15)-1, round(carstate.distance_from_center+1*10)] = 1 if self.swarm_data['mapping'][round(carstate.distance_from_start/15), round(carstate.distance_from_center+1*10)] == 0 else 0
+        if bra > 0.5:
+            self.swarm_data['mapping'][round(carstate.distance_from_start/15)-1, round(carstate.distance_from_center+1*10)] = -1 if self.swarm_data['mapping'][round(carstate.distance_from_start/15), round(carstate.distance_from_center+1*10)] == 0 else 0
 
         print("\033c")
         print("sensors: \n", distances, "\n \nangle:", carstate.angle, "\nspeed:", carstate.speed_x, "\ndist from cent:", carstate.distance_from_center, "\n")
@@ -199,7 +231,7 @@ class Driver:
         #     command.brake = min(-acceleration, 1)
 
         # command.accelerator = 0
-        # command.brake = 0 
+        # command.brake = 0
         # if (target_speed - carstate.speed_x) > 20:
         #     command.accelerator = 1
         # elif (target_speed - carstate.speed_x) > 0:

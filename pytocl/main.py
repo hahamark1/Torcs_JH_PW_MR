@@ -1,6 +1,8 @@
 """Application entry point."""
 import argparse
 import logging
+import pickle
+pickle.dump({'Drivers': {}, 'mapping': []}, open('swarm_data.pickle', 'wb'))
 
 from pytocl.protocol import Client
 
@@ -38,11 +40,11 @@ def main(driver):
     )
 
     # start client loop:
+
     client = Client(driver=driver, **args.__dict__)
     client.run()
 
 
 if __name__ == '__main__':
     from pytocl.driver import Driver
-
     main(Driver())
