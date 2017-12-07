@@ -48,7 +48,10 @@ class Net(nn.Module):
         x = self.tanh(x) 
         return x
 
-
+class NeatControl():
+    def __init__(self, filename):
+        with open('neat_nets/' + filename, 'rb') as f:
+            self.network = pickle.load(f)
 
 class Driver:
     """
@@ -75,6 +78,8 @@ class Driver:
 
         self.NN = Net()
         self.NN.load_state_dict(torch.load('neural_nets/nn_good_4layers'))
+
+	self.NEAT = NeatControl('monday')
 
         self.swarm_data = pickle.load(open('swarm_data.pickle', 'rb'))
         self.uniqueid = uuid.uuid4()
