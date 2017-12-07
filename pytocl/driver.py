@@ -130,9 +130,51 @@ class Driver:
             command.accelerator = 1
 
         command.brake = out.data[1]
-
-
         command.steering = out.data[2]
+
+	# NEAT part
+        Dops = carstate.opponents
+        # set some initial distances
+        min_d_front, ang_front, min_d_back, ang_back = 200, 0, 200, 0
+        for i in range(len(Dops)):
+            Dop = Dops[i]
+            deg = i * 10 - 180
+            # max = 200 means no car there
+            if Dop < 199:
+                # check if car is in front
+                if deg > -89 and deg < 91:
+                    if min_d_front > Dop:
+                        # the newest closest car and its angle
+                        min_d_front = Dop
+                        # get degrees into range [-1;1]
+                        ang_front = float(deg) / 90.0 #[-90;90]
+                # car behind
+                else:
+                    if min_d_back > Dop:
+                        # the newest closest car and its angle
+                        min_d_back = Dop
+                        # get degrees into range [-1;1]
+                        if deg < 0:
+                            ang_back = float(deg + 180) / 90.0 #[-180;-90] -> [0;1]
+                        else:
+                            ang_back = float(deg - 180) / 90.0 #[90;180] -> [-1;0]
+        
+        inputs = [
+            command.accelerator,
+            command.brake,
+            command.steering,
+            min_d_front,
+            ang_front,
+            min_d_back,
+            ang_back
+            ]
+
+        # get the output from NEAT based on the inputs
+        outputs = self.NEAT.network.activate(inputs)
+        # add the outputs to the NN outputs
+        command.accelerator += outputs[0]
+        command.brake += outputs[1]
+        command.steering += outputs[2]
 
         # getting back on the track hard-coded
         if distances[0] == -1:
